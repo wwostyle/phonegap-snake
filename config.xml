@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.phonegap.helloworldjqm" version="1.1.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+    <name>Snake</name>
+    <description>
+        A PhoneGap app with JQuery Mobile integration.
+    </description>
+    <author href="http://loiane.com">
+        Loiane Groner
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <preference name="iosPersistentFileLocation" value="Library" />
+    <preference name="AndroidPersistentFileLocation" value="Internal" />
+    <engine name="android" spec="~5.1.1" />
+</widget>

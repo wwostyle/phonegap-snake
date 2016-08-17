@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+        <title>JQuery Mobile Template App</title>
+
+        <link rel="stylesheet" href="libs/jQueryMobile/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="css/style.css" />
+		
+    </head>
+    <body>
+
+    	<div data-role="page" id="page" >
+	    	
+			<div data-role="header" id="header">
+				<div id="boas_vindas" class="txt box">Bem vindo! Clique na tela para jogar!</div>
+				<div id="pontos" class="txt box">Pontos:<label>0</label></div>
+				<div id="nivel" class="txt box">Nível:<label>1</label></div>
+			</div><!-- /header -->
+
+			<div role="main" id="swipe" >
+				
+			</div><!-- /conteúdo -->
+
+			<div data-role="footer" id="footer">
+				
+				<p>Plataforma: <span id="platform"></span></p>
+			</div><!-- /footer -->
+		</div><!-- /page -->
+		
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="libs/fastclick.min.js"></script>
+        <script src="libs/jquery-1.12.4.min.js"></script>
+		<script src="libs/jQueryMobile/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="libs/jgestures.js"></script>
+
+		<script type="text/javascript" src="js/index.js"></script>
+
+		<script type="text/javascript">
+            app.initialize();
+        </script>
+    </body>
+</html>

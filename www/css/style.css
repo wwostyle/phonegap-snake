@@ -32,9 +32,10 @@ html, body, #page{
 	box-sizing: border-box;
 }
 
-#pontos, #nivel {
+#pontos, #nivel, #recorde {
 	float: left;
-	width: 50%;
+	width: 33.333%;
+	height: 40px;
 	box-shadow:  2px 2px 5px #000;
 	box-sizing: border-box;
 }
@@ -44,12 +45,15 @@ html, body, #page{
 }
 
 .box{
+	
 	box-sizing: border-box;
 	background: linear-gradient(#ccc, #fff);
 	background: #ccc; /* For browsers that do not support gradients */
     background: -webkit-linear-gradient(#ccc, #fff); /* For Safari 5.1 to 6.0 */
     background: -o-linear-gradient(#ccc, #fff); /* For Opera 11.1 to 12.0 */
     background: -moz-linear-gradient(#ccc, #fff); /* For Firefox 3.6 to 15 */
+
+    
 }
 
 .txt{

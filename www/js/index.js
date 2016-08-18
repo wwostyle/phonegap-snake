@@ -1,4 +1,4 @@
-var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, VELOCIDADE = 15, NIVEL = 1, FILE = "newPersistentFile.txt";
+var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile.txt";
 
 var stop = false;
 var frameCount = 0;
@@ -78,9 +78,9 @@ var app = {
             createFile(FILE);
         }else{//arquivo existe
             console.log("Lendo arquivo");
-            NIVEL = readFile(fe);
-            var pts = document.getElementById("nivel");
-            pts.innerHTML = "Nível:<label>"+(NIVEL)+"</label>";
+            RECORDE = readFile(fe);
+            var pts = document.getElementById("RECORDE");
+            pts.innerHTML = "Nível:<label>"+(RECORDE)+"</label>";
         }
         */
 
@@ -90,12 +90,12 @@ var app = {
 
 };
 
-function atualizaPontos(f){
+function atualizaRecorde(f){
 
     console.log("Lendo arquivo");
-    NIVEL = f;
-    var pts = document.getElementById("nivel");
-    pts.innerHTML = "Nível:<label>"+(NIVEL)+"</label>";
+    RECORDE = f;
+    var pts = document.getElementById("recorde");
+    pts.innerHTML = "Nível:<label>"+(RECORDE)+"</label>";
 
 }
 
@@ -141,7 +141,7 @@ function createFile(path){
             // fileEntry.fullPath == '/someFile.txt'
                     
             console.log("Criando arquivo");
-            writeFile(fileEntry,NIVEL);
+            writeFile(fileEntry,RECORDE);
                 
 
         }, onErrorCreateFile);
@@ -225,9 +225,9 @@ var c = function(posX, posY){
     this.posY = posY;
 };
 
-function atualizarNivel(fs){
+function atualizarRecorde(fs){
     fs.root.getFile(FILE,{create: true, exclusive: false}, function(fileEntry){
-        writeFile(fileEntry,NIVEL);    
+        writeFile(fileEntry,RECORDE);    
     }, onErrorLoadFs);
     
 }
@@ -256,19 +256,14 @@ var snake = {
         var pts = document.getElementById("pontos");
         pts.innerHTML = "Pontos:<label>"+(this.corpo.length - 10)+"</label>";
 
+         window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, atualizarRecorde, onErrorLoadFs);
+
         if(this.corpo.length % 2 === 0){
             this.velocidade("aumentar");
         
             var pts = document.getElementById("nivel");
 
-            if(NIVEL === undefined || NIVEL === NaN){
-                NIVEL = 1;
-            }
-
             pts.innerHTML = "Nível:<label>"+(++NIVEL)+"</label>";  
-            
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, atualizarNivel, onErrorLoadFs);
-            
         }
     },
 

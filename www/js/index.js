@@ -1,4 +1,4 @@
-var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile.txt";
+var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt";
 
 var stop = false;
 var frameCount = 0;
@@ -84,19 +84,25 @@ var app = {
         }
         */
 
-        checkIfFileExists(FILE, readFile);
+        readFile(FILE, atualizaRecorde);
         
     }//verificar callback de erro e acerto
 
 };
 
 function atualizaRecorde(f){
+    console.log("Atualizando");
 
-    console.log("Lendo arquivo");
     RECORDE = f;
     var pts = document.getElementById("recorde");
-    pts.innerHTML = "Nível:<label>"+(RECORDE)+"</label>";
+    pts.innerHTML = "Recorde:<label>"+(RECORDE)+"</label>";
+}
 
+function atualizarRecorde(fs){
+    fs.root.getFile(FILE,{create: true, exclusive: false}, function(fileEntry){
+        writeFile(fileEntry,RECORDE);    
+    }, onErrorLoadFs);
+    
 }
 
 function checkIfFileExists(path, callback){
@@ -104,7 +110,7 @@ function checkIfFileExists(path, callback){
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, function(fs){
         fs.root.getFile(path,{},function fileExists(fileEntry){
 //            alert("File " + file.fullPath + " exists!");
-            callback(fileEntry,atualizaPontos);
+            callback(fileEntry);
         } , function fileDoesNotExist(){
             createFile(path);
         });
@@ -114,22 +120,52 @@ function checkIfFileExists(path, callback){
     
 }
 
-function readFile(fileEntry, successEvent) {
+function writeFile(path, dataObj, isAppend, successEvent) {
+    // Create a FileWriter object for our FileEntry (log.txt).
     
-    fileEntry.file(function (file) {
-        var reader = new FileReader();
-        
-        reader.onloadend = function() {
-            console.log("Successful file read: " + this.result);
-//            displayFileData(fileEntry.fullPath + ": " + this.result);
-              if(successEvent){
-                  successEvent(this.result);
-              }
-        };
+    checkIfFileExists(path, function(fileEntry){
+        fileEntry.createWriter(function (fileWriter) {
 
-        reader.readAsText(file);
+            fileWriter.onwriteend = function() {
+                console.log("Successful file read...");
+                readFile(FILE);
+            };
 
-    }, onErrorReadFile);
+            fileWriter.onerror = function (e) {
+                console.log("Failed file read: " + e.toString());
+            };
+
+            // If we are appending data to file, go to the end of the file.
+            if (isAppend) {
+                try {
+                    fileWriter.seek(fileWriter.length);
+                }
+                catch (e) {
+                    console.log("file doesn't exist!");
+                }
+            }
+            fileWriter.write(dataObj);
+        });
+    });
+}
+
+function readFile(path, successEvent) {
+    
+    checkIfFileExists(path, function(fileEntry){
+        fileEntry.file(function (file) {
+            var reader = new FileReader();
+            
+            reader.onloadend = function() {
+                console.log("Successful file read: " + this.result);
+    //            displayFileData(fileEntry.fullPath + ": " + this.result);
+                  if(successEvent){
+                      successEvent(this.result);
+                  }
+            };
+
+            reader.readAsText(file);
+        }, onErrorReadFile);
+    });
 }
 
 function createFile(path){
@@ -141,41 +177,12 @@ function createFile(path){
             // fileEntry.fullPath == '/someFile.txt'
                     
             console.log("Criando arquivo");
-            writeFile(fileEntry,RECORDE);
+            writeFile(FILE,RECORDE, null, atualizaRecorde(RECORDE));
                 
 
         }, onErrorCreateFile);
     });
 }
-
-
-
-function writeFile(fileEntry, dataObj, isAppend) {
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
-
-        fileWriter.onwriteend = function() {
-            console.log("Successful file read...");
-            readFile(fileEntry);
-        };
-
-        fileWriter.onerror = function (e) {
-            console.log("Failed file read: " + e.toString());
-        };
-
-        // If we are appending data to file, go to the end of the file.
-        if (isAppend) {
-            try {
-                fileWriter.seek(fileWriter.length);
-            }
-            catch (e) {
-                console.log("file doesn't exist!");
-            }
-        }
-        fileWriter.write(dataObj);
-    });
-}
-
 
 function displayFileData(data){
     return data;
@@ -225,13 +232,6 @@ var c = function(posX, posY){
     this.posY = posY;
 };
 
-function atualizarRecorde(fs){
-    fs.root.getFile(FILE,{create: true, exclusive: false}, function(fileEntry){
-        writeFile(fileEntry,RECORDE);    
-    }, onErrorLoadFs);
-    
-}
-
 var snake = {
 
     corpo : [new c(-1,-1)],
@@ -249,21 +249,27 @@ var snake = {
 
     cresce : function(){
         var cTemp = new Object();
-        cTemp.posX = this.corpo[this.corpo.length-1].posX;
-        cTemp.posY = this.corpo[this.corpo.length-1].posY;
+        var lengthCorpo = this.corpo.length;
+        cTemp.posX = this.corpo[lengthCorpo-1].posX;
+        cTemp.posY = this.corpo[lengthCorpo-1].posY;
         this.corpo.push(cTemp);
-
+        
+        lengthCorpo = this.corpo.length;
+        
         var pts = document.getElementById("pontos");
-        pts.innerHTML = "Pontos:<label>"+(this.corpo.length - 10)+"</label>";
+        var pontos = lengthCorpo - 10;
+        pts.innerHTML = "Pontos:<label>"+pontos+"</label>";
 
-         window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, atualizarRecorde, onErrorLoadFs);
+        if(pontos > RECORDE){
+            writeFile(FILE, pontos, null,atualizaRecorde(pontos));
+        }
 
-        if(this.corpo.length % 2 === 0){
+        if(lengthCorpo % 2 === 0){
             this.velocidade("aumentar");
         
-            var pts = document.getElementById("nivel");
+            var niv = document.getElementById("nivel");
 
-            pts.innerHTML = "Nível:<label>"+(++NIVEL)+"</label>";  
+            niv.innerHTML = "Nível:<label>"+(++NIVEL)+"</label>";  
         }
     },
 

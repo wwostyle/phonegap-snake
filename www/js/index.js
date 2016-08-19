@@ -1,4 +1,6 @@
-var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt";
+var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
+PLATAFORMA = null, PAUSE = true;
 
 var stop = false;
 var frameCount = 0;
@@ -11,8 +13,8 @@ var app = {
         this.initFastClick();
         this.bindEvents();
         this.initJGesture();
-        this.initGame();
         this.initKeyboardEvent();
+        this.initGame();
     },
     
     bindEvents: function() {
@@ -24,6 +26,7 @@ var app = {
             FastClick.attach(document.body);
         }, false);
     },
+
 
     initJGesture: function(){
 
@@ -47,6 +50,10 @@ var app = {
     initKeyboardEvent : function(){
         window.addEventListener('load', function(){
             document.addEventListener('keydown', function(event){
+                if(PAUSE){
+                    return;
+                }
+
                 var tecla = event.keyCode;
                 switch(tecla){
                     case 37:
@@ -67,28 +74,21 @@ var app = {
     },
 
     initGame : function(){
-         document.addEventListener("mousedown",iniciar);
+
+        var play = document.getElementById("jogar");
+        play.addEventListener("click",iniciar);
     },
 
     onDeviceReady: function() {
-        /*
-        var fe = checkIfFileExists(FILE)
-        if(fe === null){//se arquivo não existe criar
-            console.log("Criando arquivo");
-            createFile(FILE);
-        }else{//arquivo existe
-            console.log("Lendo arquivo");
-            RECORDE = readFile(fe);
-            var pts = document.getElementById("RECORDE");
-            pts.innerHTML = "Nível:<label>"+(RECORDE)+"</label>";
-        }
-        */
-
+        
+        console.log(device.platform);
+        PLATAFORMA = device.platform;
         readFile(FILE, atualizaRecorde);
         
     }//verificar callback de erro e acerto
 
 };
+
 
 function atualizaRecorde(f){
     console.log("Atualizando");
@@ -260,7 +260,7 @@ var snake = {
         var pontos = lengthCorpo - 10;
         pts.innerHTML = "Pontos:<label>"+pontos+"</label>";
 
-        if(pontos > RECORDE){
+        if(pontos > RECORDE && PLATAFORMA !== null){
             writeFile(FILE, pontos, null,atualizaRecorde(pontos));
         }
 
@@ -374,7 +374,9 @@ var snake = {
 function iniciar(){
     
     if(canvas == null){
+        window.location.href = "#page2";
         main();
+        resume();
 
     }
 }
@@ -430,7 +432,7 @@ function roda(){
 
     // if enough time has elapsed, draw the next frame
 
-    if (elapsed > fpsInterval) {
+    if (elapsed > fpsInterval && !PAUSE) {
 
         // Get ready for next frame by setting then=now, but also adjust for your
         // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
@@ -465,8 +467,17 @@ function setaComida(){
 
 }
 
-function swipe(event, obj){
-//    var direction = obj.description;    
-//    alert("Direção: "+direction+" Foi mesmo ");
-
+function pausar(){
+    var btPause = document.getElementById("pausar");
+    btPause.removeEventListener('click',pausar,false);
+    btPause.addEventListener('click',resume,false);
+    PAUSE = true;
 }
+
+function resume(){
+    var btPause = document.getElementById("pausar");
+    btPause.removeEventListener('click',resume,false);
+    btPause.addEventListener('click',pausar,false);
+    PAUSE = false;
+}
+

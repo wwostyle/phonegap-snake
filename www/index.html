@@ -10,11 +10,21 @@
 		
     </head>
     <body>
+<script type="text/javascript">
+	
 
+function chamarPagina(path){
+    window.location = path;
+}
+</script>
     	<div data-role="page" id="page" >
-	    	
+	    	<!--<div id="jogar" class="" ><a href="#page2">Jogar</a></div>-->
+	    	<div id="jogar" class="" >Jogar</div>
+		</div><!-- /page -->
+
+		<div data-role="page" id="page2">
 			<div data-role="header" id="header">
-				<div id="boas_vindas" class="txt box">Bem vindo! Clique na tela para jogar!</div>
+				<div id="boas_vindas" class="txt box">Bom Jogo! </div>
 				<div id="pontos" class="txt box">Pontos:<label>0</label></div>
 				<div id="nivel" class="txt box">Nível:<label>1</label></div>
 				<div id="recorde" class="txt box">Recorde:<label>0</label></div>
@@ -25,10 +35,10 @@
 			</div><!-- /conteúdo -->
 
 			<div data-role="footer" id="footer">
-				
-				<p>Plataforma: <span id="platform"></span></p>
+				<!--<div id="jogar" class="txt box">Jogar</div>-->
+				<div id="pausar" class="txt bt" >Pausar</div><!-- abre popup com configurações, finalizar e resume -->
 			</div><!-- /footer -->
-		</div><!-- /page -->
+		</div><!-- /page 2 -->
 		
 
         <script type="text/javascript" src="cordova.js"></script>

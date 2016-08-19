@@ -10,16 +10,10 @@
 		
     </head>
     <body>
-<script type="text/javascript">
-	
 
-function chamarPagina(path){
-    window.location = path;
-}
-</script>
     	<div data-role="page" id="page" >
 	    	<!--<div id="jogar" class="" ><a href="#page2">Jogar</a></div>-->
-	    	<div id="jogar" class="" >Jogar</div>
+	    	<div id="jogar" class="" data-transition="flip">Jogar</div>
 		</div><!-- /page -->
 
 		<div data-role="page" id="page2">
@@ -36,9 +30,19 @@ function chamarPagina(path){
 
 			<div data-role="footer" id="footer">
 				<!--<div id="jogar" class="txt box">Jogar</div>-->
-				<div id="pausar" class="txt bt" >Pausar</div><!-- abre popup com configurações, finalizar e resume -->
+				<div id="pausar" class="txt bt" ><a href="#page3" style="display:block" data-close-btn="right"  data-transition="flip">Pausar</a></div><!-- abre popup com configurações, finalizar e resume -->
+
 			</div><!-- /footer -->
 		</div><!-- /page 2 -->
+
+		<div data-role="page" id="page3" data-dialog="true" data-close-btn="left">
+			<div role="main" id="swipe" >
+				<div id="resume" class=""><a href="" onclick="window.location.replace('#page2');">Resume</a></div>
+				<div id="config" class=""><a href="#config">Configurações</a></div>
+				<div id="exit" class=""><a href="#page">Exit</a></div>
+				
+			</div><!-- /conteúdo -->
+		</div><!-- /page 3 -->
 		
 
         <script type="text/javascript" src="cordova.js"></script>

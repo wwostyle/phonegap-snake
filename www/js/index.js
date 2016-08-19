@@ -1,6 +1,7 @@
 var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
-PLATAFORMA = null, PAUSE = true;
+PLATAFORMA = null, PAUSE = true, firstPageUrl = "file:///android_asset/www/index.html",pageGame = "file:///android_asset/www/index.html#page2"
+SAIR = false, btSair = false;
 
 var stop = false;
 var frameCount = 0;
@@ -15,13 +16,29 @@ var app = {
         this.initJGesture();
         this.initKeyboardEvent();
         this.initGame();
+        this.onPause();
+        this.onResume();
     },
     
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
+        
+        document.addEventListener('pause', pausar, false);
+        document.addEventListener('resume', resume, false);
+
+        document.addEventListener('backbutton', this.backButton, false);
+
     },
 
-    initFastClick : function() {
+    onDeviceReady: function() {
+//        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
+        console.log("Pagina Inicial: "+window.location.href);
+        PLATAFORMA = device.platform;
+        readFile(FILE, atualizaRecorde);
+        
+    }, 
+
+    initFastClick: function() {
         window.addEventListener('load', function() {
             FastClick.attach(document.body);
         }, false);
@@ -31,63 +48,107 @@ var app = {
     initJGesture: function(){
 
         window.addEventListener('load', function(){
+
             jQuery('#swipe').bind('swipeleft',function(){
-                snake.direcao = "ESQUERDA";
+                snake.setDirecao("ESQUERDA");
             });
 
             jQuery('#swipe').bind('swiperight',function(){
-                snake.direcao = "DIREITA";
+                snake.setDirecao("DIREITA");
             });
             jQuery('#swipe').bind('swipeup',function(){
-                snake.direcao = "CIMA";
+                snake.setDirecao("CIMA");
             });
             jQuery('#swipe').bind('swipedown',function(){
-                snake.direcao = "BAIXO";
+                snake.setDirecao("BAIXO");
             });
         }, false);
     },
 
-    initKeyboardEvent : function(){
+    initKeyboardEvent: function(){
         window.addEventListener('load', function(){
             document.addEventListener('keydown', function(event){
-                if(PAUSE){
-                    return;
-                }
-
+                
                 var tecla = event.keyCode;
                 switch(tecla){
                     case 37:
-                        snake.direcao = "ESQUERDA";
+                        snake.setDirecao("ESQUERDA");
                         break;
                     case 38:
-                        snake.direcao = "CIMA";
+                        snake.setDirecao("CIMA");
                         break;
                     case 39:
-                        snake.direcao = "DIREITA";
+                        snake.setDirecao("DIREITA");
                         break;
                     case 40:
-                        snake.direcao = "BAIXO";
+                        snake.setDirecao("BAIXO");
                         break;
                 }
             });
         });
     },
 
-    initGame : function(){
+    initGame: function(){
 
         var play = document.getElementById("jogar");
         play.addEventListener("click",iniciar);
     },
 
-    onDeviceReady: function() {
+    onPause: function() {
+        var btPause = document.getElementById("pausar");
+//      btPause.removeEventListener('click',pausar,false);
+        btPause.addEventListener('click',pausar);
         
-        console.log(device.platform);
-        PLATAFORMA = device.platform;
-        readFile(FILE, atualizaRecorde);
+    },
+
+    onResume: function(){
+        var btResume = document.getElementById("resume");
+//      btResume.removeEventListener('click',resume,false);
+        btResume.addEventListener('click',resume);
+    },
+
+    backButton: function (evt) {
+        console.log("Pagina Inicial: "+window.location.href);
+        console.log("Plataforma Id: "+cordova.platformId);
         
-    }//verificar callback de erro e acerto
+        if(window.location.href == pageGame){
+            pararJogo();
+        }
+
+        if (window.location.href !== firstPageUrl) {
+            window.history.back();
+        } else {
+            canvas = null;
+            if(btSair === false){
+                var msg = "Aperte novamente para sair do jogo!";
+                window.plugins.toast.showLongBottom(msg);
+
+                exit();
+                btSair = true;
+            }else{
+                SAIR = true;
+            }
+        }
+    }
 
 };
+
+function teste(){
+    console.log("Funcionou!");
+}
+
+function exit(){
+
+    setTimeout(function(){
+        if(SAIR){
+            navigator.app.exitApp();
+        }else{
+            btSair = false;
+            SAIR = false;
+        }
+    },2500);
+
+}
 
 
 function atualizaRecorde(f){
@@ -207,6 +268,14 @@ var comida = {
     limpar : "#50beff",
     alterar : false,
 
+    resetar: function(){
+        this.posX = -1;
+        this.posY = -1;
+        this.color = "#ff0000";
+        this.limpar = "#50beff";
+        this.alterar = false;
+    },
+
     desenha : function(){
 
         ctx.fillStyle = this.color;
@@ -245,6 +314,23 @@ var snake = {
 
     andar : function(){
 
+    },
+
+    resetar: function(){
+        this.corpo = [new c(-1,-1)];
+        this.tamanho = 10;
+        this.color = "#00f";
+        this.largura = TAMANHO;
+        this.altura = TAMANHO;
+        this.direcao = "DIREITA";
+        this.comeu = false;
+    },
+
+    setDirecao: function(direcao){
+        if(PAUSE){
+            return;
+        }
+        this.direcao = direcao;
     },
 
     cresce : function(){
@@ -375,10 +461,14 @@ function iniciar(){
     
     if(canvas == null){
         window.location.href = "#page2";
-        main();
-        resume();
-
+        setTimeout(play, 1000);
     }
+}
+
+function play(){
+    
+    main();
+    resume();
 }
 
 function main(){
@@ -468,16 +558,42 @@ function setaComida(){
 }
 
 function pausar(){
-    var btPause = document.getElementById("pausar");
-    btPause.removeEventListener('click',pausar,false);
-    btPause.addEventListener('click',resume,false);
     PAUSE = true;
+    
 }
 
 function resume(){
-    var btPause = document.getElementById("pausar");
-    btPause.removeEventListener('click',resume,false);
-    btPause.addEventListener('click',pausar,false);
+    
     PAUSE = false;
 }
 
+function pararJogo(){
+    canvas = null, 
+    ctx = {}, 
+    ALTURA = 0, 
+    LARGURA = 0, 
+    frames = 0, 
+    TAMANHO = 10, 
+    VELOCIDADE = 15, 
+    NIVEL = 1, 
+    RECORDE = 0, 
+    FILE = "newPersistentFile3.txt",
+    PLATAFORMA = null, 
+    PAUSE = true, 
+    firstPageUrl = "file:///android_asset/www/index.html",
+    pageGame = "file:///android_asset/www/index.html#page2"
+    SAIR = false, 
+    btSair = false;
+
+    stop = false;
+    frameCount = 0;
+    $results = $("#results");
+    fps = 0; 
+    fpsInterval = 0; 
+    startTime = 0;
+    now = 0;
+    then = 0; 
+    elapsed = 0;
+    snake.resetar();
+    comida.resetar();
+}

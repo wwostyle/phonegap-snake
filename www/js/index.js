@@ -146,7 +146,7 @@ function exit(){
             btSair = false;
             SAIR = false;
         }
-    },2500);
+    },1000);
 
 }
 
@@ -324,6 +324,7 @@ var snake = {
         this.altura = TAMANHO;
         this.direcao = "DIREITA";
         this.comeu = false;
+
     },
 
     setDirecao: function(direcao){
@@ -492,7 +493,6 @@ function main(){
 
     ctx = canvas.getContext("2d");
     var tela = document.getElementById("swipe");
-    //pagina.removeChild(tela)
     tela.appendChild(canvas);
     
     
@@ -563,26 +563,25 @@ function pausar(){
 }
 
 function resume(){
-    
     PAUSE = false;
 }
 
 function pararJogo(){
-    canvas = null, 
-    ctx = {}, 
-    ALTURA = 0, 
-    LARGURA = 0, 
-    frames = 0, 
-    TAMANHO = 10, 
-    VELOCIDADE = 15, 
-    NIVEL = 1, 
-    RECORDE = 0, 
-    FILE = "newPersistentFile3.txt",
-    PLATAFORMA = null, 
-    PAUSE = true, 
-    firstPageUrl = "file:///android_asset/www/index.html",
-    pageGame = "file:///android_asset/www/index.html#page2"
-    SAIR = false, 
+    canvas = undefined; 
+    ctx = {}; 
+    ALTURA = 0;
+    LARGURA = 0;
+    frames = 0;
+    TAMANHO = 10;
+    VELOCIDADE = 15;
+    NIVEL = 1;
+    RECORDE = 0;
+    FILE = "newPersistentFile3.txt";
+    PLATAFORMA = null;
+    PAUSE = true;
+    firstPageUrl = "file:///android_asset/www/index.html";
+    pageGame = "file:///android_asset/www/index.html#page2";
+    SAIR = false;
     btSair = false;
 
     stop = false;
@@ -596,4 +595,15 @@ function pararJogo(){
     elapsed = 0;
     snake.resetar();
     comida.resetar();
+
+    var tela = document.getElementById("swipe");
+    tela.innerHTML="";
+
+    var pts = document.getElementById("pontos");
+    var pontos = 0;
+    pts.innerHTML = "Pontos:<label>"+pontos+"</label>";
+
+    var niv = document.getElementById("nivel");
+    var nivel = NIVEL;
+    niv.innerHTML = "Pontos:<label>"+nivel+"</label>";
 }

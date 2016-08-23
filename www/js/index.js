@@ -1,4 +1,4 @@
-var media, sound, evSound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
 PLATAFORMA = null, PAUSE = true, 
 SAIR = false, btSair = false, semMusica = false;
@@ -42,32 +42,42 @@ var app = {
         this.onPause();
         this.onResume();
         this.exit();
+        
     },
     
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         
-        document.addEventListener('pause', pausar, false);
-        document.addEventListener('resume', resume, false);
+        document.addEventListener('pause', function(){
+            pausar();
+            pausarMusica();
+        }, false);
+
+        
+        document.addEventListener('resume', function(){
+            resume();
+            tocarMusica();
+        }, false);
 
         document.addEventListener('backbutton', this.backButton, false);
+
+        document.getElementById('musica').addEventListener('click',this.ligarMusica,false);
 
     },
 
     onDeviceReady: function() {
 //        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
 //        console.log("Pagina Inicial: "+window.location.href);
-    
-        evSound = setTimeout(tocarMusica, 0);
-
+        
         PLATAFORMA = device.platform;
         readFile(FILE, atualizaRecorde);
-        media = new Media("file:///android_asset/www/sons/PLSTBANG.WAV",function(){
+        media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3",function(){
             console.log("funfou");
         },function(e){
             console.log("nao funfou: "+e.code);
         } );
 
+        controlarMusica();
     }, 
 
     initFastClick: function() {
@@ -130,13 +140,14 @@ var app = {
         var btPause = document.getElementById("pausar");
 //      btPause.removeEventListener('click',pausar,false);
         btPause.addEventListener('click',pausar);
-        
+               
     },
 
     onResume: function(){
         var btResume = document.getElementById("resume");
 //      btResume.removeEventListener('click',resume,false);
         btResume.addEventListener('click',resume);
+                
     },
 
     backButton: function (evt) {
@@ -158,26 +169,39 @@ var app = {
         btExit.addEventListener('click', exit);
     },
 
+    ligarMusica: function(){
+        if(semMusica){
+            semMusica = false;
+        }else{
+            semMusica = true;
+        }
+    },
+
 };
 
 function teste(){
     console.log("Funcionou!");
 }
 
+function controlarMusica(){
+    tocarMusica();
+}
+
 function tocarMusica(){
-    semMusica = false;
-    var loop = function(status){
-        if(status === Media.MEDIA_STOPPED && !semMusica){
-            sound.play();
+    
+    
+        var loop = function(status){
+            if(status === Media.MEDIA_STOPPED && !semMusica){
+                sound.play();
+            }
         }
-    }
 
-    sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
-        console.log("funfou");
-    },function(e){
-        console.log("nao funfou: "+e.code);
-    },loop );
-
+        sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
+            console.log("funfou");
+        },function(e){
+            console.log("nao funfou: "+e.code);
+        },loop );
+    
     sound.setVolume(0.5);
     sound.play();
 
@@ -189,13 +213,16 @@ function tocarMusica(){
 }
 
 function pararMusica(){
-    semMusica = true;
     sound.stop();
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
     btMusica.removeEventListener('click',pararMusica);
     btMusica.addEventListener('click', tocarMusica);
+}
+
+function pausarMusica(){
+    sound.pause();
 }
 
 function exit(){
@@ -210,6 +237,7 @@ function exit(){
 
         setTimeout(function(){
             if(SAIR){
+                pararMusica();
                 navigator.app.exitApp();
             }else{
                 btSair = false;
@@ -221,9 +249,6 @@ function exit(){
     }else{
         SAIR = true;
     }
-
-
-    
 
 }
 
@@ -642,7 +667,6 @@ function setaComida(){
 
 function pausar(){
     PAUSE = true;
-    
 }
 
 function resume(){

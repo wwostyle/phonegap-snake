@@ -1,4 +1,4 @@
-var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
 PLATAFORMA = null, PAUSE = true, 
 SAIR = false, btSair = false;
@@ -33,7 +33,7 @@ var app = {
         pages.push("jogo","file:///android_asset/www/index.html#page2");
         pages.push("configuracoes","file:///android_asset/www/index.html#page3");
 
-        console.log("Pagina 1: "+pages.get("indexs"));
+//        console.log("Pagina 1: "+pages.get("index"));
         this.initFastClick();
         this.bindEvents();
         this.initJGesture();
@@ -56,10 +56,22 @@ var app = {
 
     onDeviceReady: function() {
 //        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
-        console.log("Pagina Inicial: "+window.location.href);
+//        console.log("Pagina Inicial: "+window.location.href);
         PLATAFORMA = device.platform;
         readFile(FILE, atualizaRecorde);
-        
+        media = new Media("file:///android_asset/www/sons/PLSTBANG.WAV",function(){
+            console.log("funfou");
+        },function(e){
+            console.log("nao funfou: "+e.code);
+        } );
+
+        sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
+            console.log("funfou");
+        },function(e){
+            console.log("nao funfou: "+e.code);
+        } );
+
+        sound.setVolume(0.5);
     }, 
 
     initFastClick: function() {
@@ -382,6 +394,8 @@ var snake = {
         
         lengthCorpo = this.corpo.length;
         
+        setTimeout(media.play(), 0);
+
         var pts = document.getElementById("pontos");
         var pontos = lengthCorpo - 10;
         pts.innerHTML = "Pontos:<label>"+pontos+"</label>";

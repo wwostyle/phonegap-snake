@@ -14,8 +14,17 @@
     <gap:plugin name="cordova-plugin-spinnerdialog" source="npm" />
     <gap:plugin name="cordova-plugin-x-toast" source="npm" />
 
-    <preference name="iosPersistentFileLocation" value="Library" />
-    <preference name="AndroidPersistentFileLocation" value="Internal" />
+    <platform name="ios">
+        <preference name="iosPersistentFileLocation" value="Library" />
+    </platform>
+    <platform name="android">
+        <preference name="AndroidPersistentFileLocation" value="Internal" />
+    </platform>
+
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="fullscreen" value="true" />
+    <preference name="orientation" value="portrait" />
+
     <engine name="android" spec="~5.1.1" />
 
     

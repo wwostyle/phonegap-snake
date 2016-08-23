@@ -1,5 +1,5 @@
 var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
-VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
+VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = {recorde:"recorde.txt", somDeFundo:"somDeFundo.txt", efeitos:"efeitos.txt"},
 PLATAFORMA = null, PAUSE = true, 
 SAIR = false, btSair = false, semMusica = false;
 
@@ -48,6 +48,8 @@ var app = {
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         
+        document.addEventListener("menubutton", this.onMenuPressed, false);
+
         document.addEventListener('pause', function(){
             pausar();
             pausarMusica();
@@ -68,9 +70,9 @@ var app = {
     onDeviceReady: function() {
 //        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
 //        console.log("Pagina Inicial: "+window.location.href);
-        
+//        StatusBar.hide();
         PLATAFORMA = device.platform;
-        readFile(FILE, atualizaRecorde);
+        readFile(FILE.recorde, atualizaRecorde);
         media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3",function(){
             console.log("funfou");
         },function(e){
@@ -84,6 +86,10 @@ var app = {
         window.addEventListener('load', function() {
             FastClick.attach(document.body);
         }, false);
+    },
+
+    onMenuPressed: function(){
+        console.log("abrir menu");
     },
 
 
@@ -262,7 +268,7 @@ function atualizaRecorde(f){
 }
 
 function atualizarRecorde(fs){
-    fs.root.getFile(FILE,{create: true, exclusive: false}, function(fileEntry){
+    fs.root.getFile(FILE.recorde,{create: true, exclusive: false}, function(fileEntry){
         writeFile(fileEntry,RECORDE);    
     }, onErrorLoadFs);
     
@@ -295,7 +301,7 @@ function writeFile(path, dataObj, isAppend, successEvent) {
 
             fileWriter.onwriteend = function() {
                 console.log("Successful file read...");
-                readFile(FILE);
+//                readFile(path);
             };
 
             fileWriter.onerror = function (e) {
@@ -344,7 +350,7 @@ function createFile(path){
             // fileEntry.fullPath == '/someFile.txt'
                     
             console.log("Criando arquivo");
-            writeFile(FILE,RECORDE, null, atualizaRecorde(RECORDE));
+            writeFile(path,RECORDE, null, atualizaRecorde(RECORDE));
                 
 
         }, onErrorCreateFile);
@@ -456,7 +462,7 @@ var snake = {
         pts.innerHTML = "Pontos:<label>"+pontos+"</label>";
 
         if(pontos > RECORDE && PLATAFORMA !== null){
-            writeFile(FILE, pontos, null,atualizaRecorde(pontos));
+            writeFile(FILE.recorde, pontos, null,atualizaRecorde(pontos));
         }
 
         if(lengthCorpo % 2 === 0){
@@ -682,8 +688,7 @@ function pararJogo(){
     TAMANHO = 10;
     VELOCIDADE = 15;
     NIVEL = 1;
-    RECORDE = readFile(FILE, atualizaRecorde);
-    FILE = "newPersistentFile3.txt";
+    RECORDE = readFile(FILE.recorde, atualizaRecorde);
     PAUSE = true;
     SAIR = false;
     btSair = false;

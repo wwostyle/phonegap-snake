@@ -1,7 +1,7 @@
-var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+var media, sound, evSound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
 PLATAFORMA = null, PAUSE = true, 
-SAIR = false, btSair = false;
+SAIR = false, btSair = false, semMusica = false;
 
 var stop = false;
 var frameCount = 0;
@@ -57,6 +57,9 @@ var app = {
     onDeviceReady: function() {
 //        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
 //        console.log("Pagina Inicial: "+window.location.href);
+    
+        evSound = setTimeout(tocarMusica, 0);
+
         PLATAFORMA = device.platform;
         readFile(FILE, atualizaRecorde);
         media = new Media("file:///android_asset/www/sons/PLSTBANG.WAV",function(){
@@ -65,13 +68,6 @@ var app = {
             console.log("nao funfou: "+e.code);
         } );
 
-        sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
-            console.log("funfou");
-        },function(e){
-            console.log("nao funfou: "+e.code);
-        } );
-
-        sound.setVolume(0.5);
     }, 
 
     initFastClick: function() {
@@ -160,12 +156,46 @@ var app = {
     exit: function(){
         var btExit = document.getElementById("exit");
         btExit.addEventListener('click', exit);
-    }
+    },
 
 };
 
 function teste(){
     console.log("Funcionou!");
+}
+
+function tocarMusica(){
+    semMusica = false;
+    var loop = function(status){
+        if(status === Media.MEDIA_STOPPED && !semMusica){
+            sound.play();
+        }
+    }
+
+    sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
+        console.log("funfou");
+    },function(e){
+        console.log("nao funfou: "+e.code);
+    },loop );
+
+    sound.setVolume(0.5);
+    sound.play();
+
+    var btMusica = document.getElementById("musica");
+    btMusica.innerHTML = "<a href=''>Música: Ligada</a>";
+    btMusica.removeEventListener('click',tocarMusica);
+    btMusica.addEventListener('click', pararMusica);
+
+}
+
+function pararMusica(){
+    semMusica = true;
+    sound.stop();
+
+    var btMusica = document.getElementById("musica");
+    btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
+    btMusica.removeEventListener('click',pararMusica);
+    btMusica.addEventListener('click', tocarMusica);
 }
 
 function exit(){

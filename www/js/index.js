@@ -1,6 +1,6 @@
 var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = "newPersistentFile3.txt",
-PLATAFORMA = null, PAUSE = true, firstPageUrl = "file:///android_asset/www/index.html",pageGame = "file:///android_asset/www/index.html#page2"
+PLATAFORMA = null, PAUSE = true, 
 SAIR = false, btSair = false;
 
 var stop = false;
@@ -8,9 +8,32 @@ var frameCount = 0;
 var $results = $("#results");
 var fps, fpsInterval, startTime, now, then, elapsed;
 
+var pages = {
+    values: {},
+    
+    push: function(index, value){ 
+        this.values[index] = value;
+    },
+
+    remove: function(index){
+        this.values.splice(index, 1);
+    },
+
+    get: function(index){
+        return this.values[index];
+    }
+
+}
+
 var app = {
     
     initialize: function() {
+//        pages = new HashMap();
+        pages.push("index","file:///android_asset/www/index.html");
+        pages.push("jogo","file:///android_asset/www/index.html#page2");
+        pages.push("configuracoes","file:///android_asset/www/index.html#page3");
+
+        console.log("Pagina 1: "+pages.get("indexs"));
         this.initFastClick();
         this.bindEvents();
         this.initJGesture();
@@ -18,6 +41,7 @@ var app = {
         this.initGame();
         this.onPause();
         this.onResume();
+        this.exit();
     },
     
     bindEvents: function() {
@@ -110,25 +134,20 @@ var app = {
     backButton: function (evt) {
         console.log("Pagina Inicial: "+window.location.href);
         console.log("Plataforma Id: "+cordova.platformId);
-        
-        if(window.location.href == pageGame){
-            pararJogo();
-        }
+       
 
-        if (window.location.href !== firstPageUrl) {
-            window.history.back();
-        } else {
+        if (window.location.href !== pages.get("index") && window.location.href !== pages.get("configuracoes")) {
+            pausar();
+            window.location.replace("#page3");
+        } else if(window.location.href === pages.get("index")){
             canvas = null;
-            if(btSair === false){
-                var msg = "Aperte novamente para sair do jogo!";
-                window.plugins.toast.showLongBottom(msg);
-
-                exit();
-                btSair = true;
-            }else{
-                SAIR = true;
-            }
+            exit();
         }
+    },
+
+    exit: function(){
+        var btExit = document.getElementById("exit");
+        btExit.addEventListener('click', exit);
     }
 
 };
@@ -138,15 +157,31 @@ function teste(){
 }
 
 function exit(){
-
-    setTimeout(function(){
-        if(SAIR){
-            navigator.app.exitApp();
-        }else{
-            btSair = false;
-            SAIR = false;
+    
+    if(btSair === false){
+        canvas = null;
+        pararJogo();
+        var msg = "Aperte novamente para sair do jogo!";
+        if(PLATAFORMA !== null){
+            window.plugins.toast.showLongBottom(msg);
         }
-    },1000);
+
+        setTimeout(function(){
+            if(SAIR){
+                navigator.app.exitApp();
+            }else{
+                btSair = false;
+                SAIR = false;
+            }
+        },1000);
+
+        btSair = true;
+    }else{
+        SAIR = true;
+    }
+
+
+    
 
 }
 
@@ -167,7 +202,11 @@ function atualizarRecorde(fs){
 }
 
 function checkIfFileExists(path, callback){
-        
+    
+    if(PLATAFORMA === null){
+        return;
+    }
+
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, function(fs){
         fs.root.getFile(path,{},function fileExists(fileEntry){
 //            alert("File " + file.fullPath + " exists!");
@@ -575,12 +614,9 @@ function pararJogo(){
     TAMANHO = 10;
     VELOCIDADE = 15;
     NIVEL = 1;
-    RECORDE = 0;
+    RECORDE = readFile(FILE, atualizaRecorde);
     FILE = "newPersistentFile3.txt";
-    PLATAFORMA = null;
     PAUSE = true;
-    firstPageUrl = "file:///android_asset/www/index.html";
-    pageGame = "file:///android_asset/www/index.html#page2";
     SAIR = false;
     btSair = false;
 

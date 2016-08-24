@@ -79,7 +79,12 @@ var app = {
             console.log("nao funfou: "+e.code);
         } );
 
-        controlarMusica();
+        readFile(FILE.somDeFundo, function(f){
+            atualizarVarSemMusica(f,controlarMusica);
+            
+        });
+        
+
     }, 
 
     initFastClick: function() {
@@ -172,15 +177,19 @@ var app = {
 
     exit: function(){
         var btExit = document.getElementById("exit");
-        btExit.addEventListener('click', exit);
+        btExit.addEventListener('click', function(){
+            pararJogo();
+            window.location.replace("#page");
+        });
     },
 
     ligarMusica: function(){
-        if(semMusica){
+        if(semMusica === true){
             semMusica = false;
         }else{
             semMusica = true;
         }
+        writeFile(FILE.somDeFundo, semMusica, null, null);
     },
 
 };
@@ -189,24 +198,31 @@ function teste(){
     console.log("Funcionou!");
 }
 
+function atualizarVarSemMusica(f, callback){
+    semMusica = f;
+    callback();
+}
+
 function controlarMusica(){
-    tocarMusica();
+
+    sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
+        console.log("funfou");
+    },function(e){
+        console.log("nao funfou: "+e.code);
+    },function(status){
+        if(status === Media.MEDIA_STOPPED && !semMusica){
+            sound.play();
+        }
+    });
+
+    if(!semMusica){    
+        tocarMusica();
+    }else{
+        pararMusica();
+    }
 }
 
 function tocarMusica(){
-    
-    
-        var loop = function(status){
-            if(status === Media.MEDIA_STOPPED && !semMusica){
-                sound.play();
-            }
-        }
-
-        sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
-            console.log("funfou");
-        },function(e){
-            console.log("nao funfou: "+e.code);
-        },loop );
     
     sound.setVolume(0.5);
     sound.play();
@@ -219,7 +235,9 @@ function tocarMusica(){
 }
 
 function pararMusica(){
+    
     sound.stop();
+    sound.release();
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
@@ -300,8 +318,11 @@ function writeFile(path, dataObj, isAppend, successEvent) {
         fileEntry.createWriter(function (fileWriter) {
 
             fileWriter.onwriteend = function() {
-                console.log("Successful file read...");
-//                readFile(path);
+                
+                readFile(path, function(f){
+                    console.log("Successful file Write: "+f);
+                });
+                
             };
 
             fileWriter.onerror = function (e) {
@@ -329,7 +350,7 @@ function readFile(path, successEvent) {
             var reader = new FileReader();
             
             reader.onloadend = function() {
-                console.log("Successful file read: " + this.result);
+                console.log("Successful file "+ path +" read: " + this.result);
     //            displayFileData(fileEntry.fullPath + ": " + this.result);
                   if(successEvent){
                       successEvent(this.result);
@@ -349,7 +370,7 @@ function createFile(path){
             // fileEntry.name == 'someFile.txt'
             // fileEntry.fullPath == '/someFile.txt'
                     
-            console.log("Criando arquivo");
+            console.log("Criando arquivo: "+path);
             writeFile(path,RECORDE, null, atualizaRecorde(RECORDE));
                 
 

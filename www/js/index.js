@@ -73,16 +73,32 @@ var app = {
 //        StatusBar.hide();
         PLATAFORMA = device.platform;
         readFile(FILE.recorde, atualizaRecorde);
-        media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3",function(){
+        media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3", function(){
             console.log("funfou");
-        },function(e){
+        }, function(e){
             console.log("nao funfou: "+e.code);
-        } );
-
-        readFile(FILE.somDeFundo, function(f){
-            atualizarVarSemMusica(f,controlarMusica);
-            
         });
+
+ //       removeFile(FILE.somDeFundo);
+
+        checkIfFileExists(FILE.somDeFundo, function(){
+            readFile(FILE.somDeFundo, function(f){
+                atualizarVarSemMusica(f,function(){
+                    controlarMusica();
+                });
+
+            });
+        }, function(){
+            console.log("callError");
+
+            createFile(FILE.somDeFundo, function(){
+                writeFile(FILE.somDeFundo, semMusica, null, function(){
+                    controlarMusica();
+                });
+            });
+
+        });
+        
         
 
     }, 
@@ -189,7 +205,7 @@ var app = {
         }else{
             semMusica = true;
         }
-        writeFile(FILE.somDeFundo, semMusica, null, null);
+        writeFile(FILE.somDeFundo, semMusica, null);
     },
 
 };
@@ -210,12 +226,12 @@ function controlarMusica(){
     },function(e){
         console.log("nao funfou: "+e.code);
     },function(status){
-        if(status === Media.MEDIA_STOPPED && !semMusica){
+        if(status === Media.MEDIA_STOPPED && semMusica !== "true"){
             sound.play();
         }
     });
 
-    if(!semMusica){    
+    if(semMusica !== "true"){    
         tocarMusica();
     }else{
         pararMusica();
@@ -236,8 +252,10 @@ function tocarMusica(){
 
 function pararMusica(){
     
-    sound.stop();
-    sound.release();
+    if(semMusica !== "true"){
+        sound.stop();
+        sound.release();
+    }
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
@@ -292,7 +310,7 @@ function atualizarRecorde(fs){
     
 }
 
-function checkIfFileExists(path, callback){
+function checkIfFileExists(path, eventSuccess, eventFailed){
     
     if(PLATAFORMA === null){
         return;
@@ -301,14 +319,36 @@ function checkIfFileExists(path, callback){
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, function(fs){
         fs.root.getFile(path,{},function fileExists(fileEntry){
 //            alert("File " + file.fullPath + " exists!");
-            callback(fileEntry);
+            console.log("arquivo "+path+" existe");
+            eventSuccess(fileEntry);
         } , function fileDoesNotExist(){
-            createFile(path);
+            console.log("arquivo "+path+" nao existe");
+            if(eventFailed){
+                eventFailed();
+            }
         });
     }, function(e){
         alert('erro checkIfFileExists: '+e.code);
     });
     
+}
+
+function createFile(path, callback){
+    window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, function(fs){
+        fs.root.getFile(path,{ create: true, exclusive: false },function (fileEntry) {
+                
+            console.log("fileEntry is file? " + fileEntry.isFile.toString());
+            // fileEntry.name == 'someFile.txt'
+            // fileEntry.fullPath == '/someFile.txt'
+                    
+            console.log("Criando arquivo: "+path);
+            if(callback){
+                callback();
+            }
+                
+
+        }, onErrorCreateFile);
+    });
 }
 
 function writeFile(path, dataObj, isAppend, successEvent) {
@@ -322,7 +362,9 @@ function writeFile(path, dataObj, isAppend, successEvent) {
                 readFile(path, function(f){
                     console.log("Successful file Write: "+f);
                 });
-                
+                if(successEvent){
+                    successEvent();
+                }
             };
 
             fileWriter.onerror = function (e) {
@@ -362,19 +404,19 @@ function readFile(path, successEvent) {
     });
 }
 
-function createFile(path){
+function removeFile(path){
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 1024, function(fs){
-        fs.root.getFile(path,{ create: true, exclusive: false },function (fileEntry) {
-                
-            console.log("fileEntry is file? " + fileEntry.isFile.toString());
-            // fileEntry.name == 'someFile.txt'
-            // fileEntry.fullPath == '/someFile.txt'
-                    
-            console.log("Criando arquivo: "+path);
-            writeFile(path,RECORDE, null, atualizaRecorde(RECORDE));
-                
+        fs.root.getFile(path, {create: false}, function(fileEntry) {
 
-        }, onErrorCreateFile);
+             fileEntry.remove(function() {
+                console.log("arquivo "+path+" removido");
+             }, function() {
+                console.log("erro ao tentar remover arquivo "+path);
+             });
+                
+          }, errorCallback);
+    }, function(fs){
+        console.log("arquivo "+path+" não encontrado");
     });
 }
 
@@ -392,6 +434,10 @@ function onErrorCreateFile(e){
 
 function onErrorReadFile(){
     alert("onErrorReadFile");
+}
+
+function errorCallback(error){
+    alert("ERROR: " + error.code);
 }
 
 var comida = {
@@ -483,7 +529,7 @@ var snake = {
         pts.innerHTML = "Pontos:<label>"+pontos+"</label>";
 
         if(pontos > RECORDE && PLATAFORMA !== null){
-            writeFile(FILE.recorde, pontos, null,atualizaRecorde(pontos));
+            writeFile(FILE.recorde, pontos, null,function(){atualizaRecorde(pontos);});
         }
 
         if(lengthCorpo % 2 === 0){

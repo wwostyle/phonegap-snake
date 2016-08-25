@@ -1,7 +1,7 @@
 var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = {recorde:"recorde.txt", somDeFundo:"somDeFundo.txt", efeitos:"efeitos.txt"},
 PLATAFORMA = null, PAUSE = true, 
-SAIR = false, btSair = false, semMusica = false;
+SAIR = false, btSair = false, tocarMusica = true;
 
 var stop = false;
 var frameCount = 0;
@@ -41,7 +41,7 @@ var app = {
         this.initGame();
         this.onPause();
         this.onResume();
-        this.exit();
+        this.menu();
         
     },
     
@@ -58,12 +58,12 @@ var app = {
         
         document.addEventListener('resume', function(){
             resume();
-            tocarMusica();
+            iniciarMusica();
         }, false);
 
         document.addEventListener('backbutton', this.backButton, false);
 
-        document.getElementById('musica').addEventListener('click',this.ligarMusica,false);
+        document.getElementById('musica').addEventListener('click',this.musica,false);
 
     },
 
@@ -73,6 +73,7 @@ var app = {
 //        StatusBar.hide();
         PLATAFORMA = device.platform;
         readFile(FILE.recorde, atualizaRecorde);
+
         media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3", function(){
             console.log("funfou");
         }, function(e){
@@ -83,7 +84,7 @@ var app = {
 
         checkIfFileExists(FILE.somDeFundo, function(){
             readFile(FILE.somDeFundo, function(f){
-                atualizarVarSemMusica(f,function(){
+                atualizarVarTocarMusica(f,function(){
                     controlarMusica();
                 });
 
@@ -92,15 +93,13 @@ var app = {
             console.log("callError");
 
             createFile(FILE.somDeFundo, function(){
-                writeFile(FILE.somDeFundo, semMusica, null, function(){
+                writeFile(FILE.somDeFundo, tocarMusica, null, function(){
                     controlarMusica();
                 });
             });
 
         });
         
-        
-
     }, 
 
     initFastClick: function() {
@@ -191,21 +190,29 @@ var app = {
         }
     },
 
-    exit: function(){
-        var btExit = document.getElementById("exit");
+    menu: function(){
+        var btExit = document.getElementById("menu");
         btExit.addEventListener('click', function(){
             pararJogo();
             window.location.replace("#page");
         });
     },
 
-    ligarMusica: function(){
-        if(semMusica === true){
-            semMusica = false;
+    musica: function(){
+
+        if(tocarMusica === "true"){
+            tocarMusica = "false";
         }else{
-            semMusica = true;
+            tocarMusica = "true";
         }
-        writeFile(FILE.somDeFundo, semMusica, null);
+//        writeFile(FILE.somDeFundo, tocarMusica, null);
+        writeFile(FILE.somDeFundo, tocarMusica, null, function(){
+            if(tocarMusica === "true"){
+                iniciarMusica();
+            }else{
+                pararMusica();
+            }
+        });
     },
 
 };
@@ -214,8 +221,8 @@ function teste(){
     console.log("Funcionou!");
 }
 
-function atualizarVarSemMusica(f, callback){
-    semMusica = f;
+function atualizarVarTocarMusica(f, callback){
+    tocarMusica = f;
     callback();
 }
 
@@ -226,45 +233,47 @@ function controlarMusica(){
     },function(e){
         console.log("nao funfou: "+e.code);
     },function(status){
-        if(status === Media.MEDIA_STOPPED && semMusica !== "true"){
+        if(status === Media.MEDIA_STOPPED && tocarMusica === "true"){
             sound.play();
         }
     });
 
-    if(semMusica !== "true"){    
-        tocarMusica();
+    if(tocarMusica === "true"){    
+        iniciarMusica();
     }else{
-        pararMusica();
+        pararMusica(true);
     }
 }
 
-function tocarMusica(){
-    
+function iniciarMusica(){
+
     sound.setVolume(0.5);
     sound.play();
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Ligada</a>";
-    btMusica.removeEventListener('click',tocarMusica);
-    btMusica.addEventListener('click', pararMusica);
+//    btMusica.removeEventListener('click',tocarMusica);
+//    btMusica.addEventListener('click', pararMusica);
 
 }
 
-function pararMusica(){
+function pararMusica(isControle){
     
-    if(semMusica !== "true"){
+    if(!isControle){
         sound.stop();
         sound.release();
     }
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
-    btMusica.removeEventListener('click',pararMusica);
-    btMusica.addEventListener('click', tocarMusica);
+//    btMusica.removeEventListener('click',pararMusica);
+//    btMusica.addEventListener('click', tocarMusica);
 }
 
 function pausarMusica(){
-    sound.pause();
+    if(tocarMusica === "true"){
+        sound.pause();
+    }
 }
 
 function exit(){

@@ -1,7 +1,7 @@
 var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10,
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = {recorde:"recorde.txt", somDeFundo:"somDeFundo.txt", efeitos:"efeitos.txt"},
 PLATAFORMA = null, PAUSE = true, 
-SAIR = false, btSair = false, tocarMusica = "true", tocarEfeitos = "true";
+SAIR = false, btSair = false, tocarMusica = "true", tocarEfeitos = "true", volume = 1;
 
 var stop = false;
 var frameCount = 0;
@@ -42,30 +42,13 @@ var app = {
         this.onPause();
         this.onResume();
         this.menu();
+        this.efeitos();
         
     },
     
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         
-        document.addEventListener("menubutton", this.onMenuPressed, false);
-
-        document.addEventListener('pause', function(){
-            pausar();
-        }, false);
-
-        
-        document.addEventListener('resume', function(){
-            resume();
-            iniciarMusica();
-        }, false);
-
-        document.addEventListener('backbutton', this.backButton, false);
-
-        document.getElementById('musica').addEventListener('click',this.musica,false);
-
-        document.getElementById('efeitos').addEventListener('click',this.efeitos,false);
-
     },
 
     onDeviceReady: function() {
@@ -109,6 +92,28 @@ var app = {
             });
 
         });
+
+        navigator.app.overrideButton("menubutton",true);
+        navigator.app.overrideButton("volumedownbutton",true);
+        navigator.app.overrideButton("volumeupbutton",true);
+
+        document.addEventListener("menubutton", app.onMenuPressed, false);
+        document.addEventListener('volumedownbutton', app.onVolumeDownKeyDown, false);
+        document.addEventListener('volumeupbutton', app.onVolumeUpKeyDown, false);
+        document.addEventListener('pause', function(){
+            pausar();
+        }, false);
+
+        
+        document.addEventListener('resume', function(){
+            resume();
+        }, false);
+
+        document.addEventListener('backbutton', app.backButton, false);
+
+        document.getElementById('musica').addEventListener('click',app.musica,false);
+
+        document.getElementById('efeitos').addEventListener('click',app.efeitos,false);
         
     }, 
 
@@ -119,7 +124,7 @@ var app = {
     },
 
     onMenuPressed: function(){
-        console.log("abrir menu");
+        window.location.replace(pages.get("configuracoes"));
     },
 
 
@@ -193,7 +198,6 @@ var app = {
 
         if (window.location.href !== pages.get("index") && window.location.href !== pages.get("configuracoes")) {
             pausar();
-            window.location.replace("#page3");
         } else if(window.location.href === pages.get("index")){
             canvas = null;
             exit();
@@ -238,7 +242,15 @@ var app = {
         }
 
         writeFile(FILE.efeitos, tocarEfeitos);
-    }
+    },
+
+    onVolumeUpKeyDown: function(){
+        definirVolume("musica",0.1);
+    },
+
+    onVolumeDownKeyDown: function(){
+        definirVolume("musica",-0.1);
+    },
 
 };
 
@@ -253,7 +265,7 @@ function atualizarVarTocarMusica(f, callback){
 
 function controlarMusica(){
 
-    window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",1,1,0,function(){
+    window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",volume,1,0,function(){
         console.log("funfou");
         if(tocarMusica === "true"){
             iniciarMusica();
@@ -276,22 +288,20 @@ function iniciarMusica(){
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Ligada</a>";
-//    btMusica.removeEventListener('click',tocarMusica);
-//    btMusica.addEventListener('click', pararMusica);
 
 }
 
 function pararMusica(isControle){
-    
+
     if(!isControle){
         window.plugins.NativeAudio.stop("musica");
-        window.plugins.NativeAudio.unload("musica");
+        if(SAIR === true){
+            window.plugins.NativeAudio.unload("musica");
+        }
     }
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
-//    btMusica.removeEventListener('click',pararMusica);
-//    btMusica.addEventListener('click', tocarMusica);
 }
 
 function controlarEfeitos(nome,caminho){
@@ -306,6 +316,32 @@ function playEfeito(nome){
     if(tocarEfeitos === "true"){
         setTimeout(window.plugins.NativeAudio.play(nome), 0);
     }
+}
+
+function definirVolume(id, vol){
+
+    if(volume === 0 && vol > 0){
+        volume = 0.1;
+//        iniciarMusica();
+//        return;
+    }else if(volume === 0.1 && vol < 0){
+        volume = 0;
+//        pararMusica();
+//        return;
+    }else if(volume === 0 && vol < 0){
+        return;
+    }else if(volume === 1 && vol > 0){
+        return;
+    }else{
+        volume = (volume + vol).toFixed(1);
+        volume = Number(volume);    
+    }
+    
+    window.plugins.NativeAudio.setVolumeForComplexAsset(id, volume, function(msg){
+        console.log("Funcionou: "+msg);
+    }, function(msg){
+        console.log("Erro: "+msg);
+    });
 }
 
 function exit(){
@@ -781,6 +817,9 @@ function setaComida(){
 
 function pausar(){
     PAUSE = true;
+    if(pages.get("index") !== window.location.href){
+        window.location.replace(pages.get("configuracoes"));
+    }
 }
 
 function resume(){

@@ -1,7 +1,7 @@
-var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10,
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = {recorde:"recorde.txt", somDeFundo:"somDeFundo.txt", efeitos:"efeitos.txt"},
 PLATAFORMA = null, PAUSE = true, 
-SAIR = false, btSair = false, tocarMusica = true;
+SAIR = false, btSair = false, tocarMusica = "true", tocarEfeitos = "true";
 
 var stop = false;
 var frameCount = 0;
@@ -64,6 +64,8 @@ var app = {
 
         document.getElementById('musica').addEventListener('click',this.musica,false);
 
+        document.getElementById('efeitos').addEventListener('click',this.efeitos,false);
+
     },
 
     onDeviceReady: function() {
@@ -73,12 +75,21 @@ var app = {
         PLATAFORMA = device.platform;
         readFile(FILE.recorde, atualizaRecorde);
 
-        window.plugins.NativeAudio.preloadSimple("comer","sons/PLSTBANG.mp3", function(){
-            console.log("funfou");
-        }, function(e){
-            console.log("nao funfou: "+e);
-        });
 
+        controlarEfeitos("comer","sons/PLSTBANG.mp3");
+        checkIfFileExists(FILE.efeitos, function(){
+            readFile(FILE.efeitos, function(f){
+                tocarEfeitos = f;
+            });
+        }, function(){
+            console.log("callError");
+
+            createFile(FILE.efeitos, function(){
+                writeFile(FILE.efeitos, tocarEfeitos);
+            });
+
+        });
+        
  //       removeFile(FILE.somDeFundo);
 
         checkIfFileExists(FILE.somDeFundo, function(){
@@ -204,7 +215,7 @@ var app = {
         }else{
             tocarMusica = "true";
         }
-//        writeFile(FILE.somDeFundo, tocarMusica, null);
+
         writeFile(FILE.somDeFundo, tocarMusica, null, function(){
             if(tocarMusica === "true"){
                 iniciarMusica();
@@ -213,6 +224,21 @@ var app = {
             }
         });
     },
+
+    efeitos: function(){
+
+        var btEfeito = document.getElementById('efeitos');
+
+        if(tocarEfeitos === "true"){
+            tocarEfeitos = "false";
+            btEfeito.innerHTML = "<a href=''>Efeitos de Som: Desligado</a>";
+        }else{
+            tocarEfeitos = "true";
+            btEfeito.innerHTML = "<a href=''>Efeitos de Som: Ligado</a>";
+        }
+
+        writeFile(FILE.efeitos, tocarEfeitos);
+    }
 
 };
 
@@ -229,7 +255,7 @@ function controlarMusica(){
 
     window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",1,1,0,function(){
         console.log("funfou");
-        if(tocarMusica === "true"){    
+        if(tocarMusica === "true"){
             iniciarMusica();
         }else{
             pararMusica(true);
@@ -238,7 +264,6 @@ function controlarMusica(){
         console.log("nao funfou: "+e);
     });
 
-    
 }
 
 function iniciarMusica(){
@@ -267,6 +292,20 @@ function pararMusica(isControle){
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
 //    btMusica.removeEventListener('click',pararMusica);
 //    btMusica.addEventListener('click', tocarMusica);
+}
+
+function controlarEfeitos(nome,caminho){
+    window.plugins.NativeAudio.preloadSimple(nome,caminho,function(msg){
+        console.log("Efeito iniciado: "+msg);
+    },function(msg){
+        console.log("Erro ao iniciar o efeito "+ nome +". Motivo: "+msg);
+    });
+}
+
+function playEfeito(nome){
+    if(tocarEfeitos === "true"){
+        setTimeout(window.plugins.NativeAudio.play(nome), 0);
+    }
 }
 
 function exit(){
@@ -524,7 +563,7 @@ var snake = {
         
         lengthCorpo = this.corpo.length;
         
-        setTimeout(window.plugins.NativeAudio.play("comer"), 0);
+        playEfeito("comer");
 
         var pts = document.getElementById("pontos");
         var pontos = lengthCorpo - 10;

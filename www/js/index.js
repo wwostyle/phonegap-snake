@@ -1,4 +1,4 @@
-var media, sound, canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
+var canvas, ctx, ALTURA, LARGURA, frames = 0, TAMANHO = 10, 
 VELOCIDADE = 15, NIVEL = 1, RECORDE = 0, FILE = {recorde:"recorde.txt", somDeFundo:"somDeFundo.txt", efeitos:"efeitos.txt"},
 PLATAFORMA = null, PAUSE = true, 
 SAIR = false, btSair = false, tocarMusica = true;
@@ -52,7 +52,6 @@ var app = {
 
         document.addEventListener('pause', function(){
             pausar();
-            pausarMusica();
         }, false);
 
         
@@ -74,10 +73,10 @@ var app = {
         PLATAFORMA = device.platform;
         readFile(FILE.recorde, atualizaRecorde);
 
-        media = new Media("file:///android_asset/www/sons/PLSTBANG.mp3", function(){
+        window.plugins.NativeAudio.preloadSimple("comer","sons/PLSTBANG.mp3", function(){
             console.log("funfou");
         }, function(e){
-            console.log("nao funfou: "+e.code);
+            console.log("nao funfou: "+e);
         });
 
  //       removeFile(FILE.somDeFundo);
@@ -228,27 +227,27 @@ function atualizarVarTocarMusica(f, callback){
 
 function controlarMusica(){
 
-    sound = new Media("file:///android_asset/www/sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",function(){
+    window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",1,1,0,function(){
         console.log("funfou");
-    },function(e){
-        console.log("nao funfou: "+e.code);
-    },function(status){
-        if(status === Media.MEDIA_STOPPED && tocarMusica === "true"){
-            sound.play();
+        if(tocarMusica === "true"){    
+            iniciarMusica();
+        }else{
+            pararMusica(true);
         }
+    },function(e){
+        console.log("nao funfou: "+e);
     });
 
-    if(tocarMusica === "true"){    
-        iniciarMusica();
-    }else{
-        pararMusica(true);
-    }
+    
 }
 
 function iniciarMusica(){
 
-    sound.setVolume(0.5);
-    sound.play();
+    window.plugins.NativeAudio.loop("musica",function(){
+
+    },function(msg){
+        console.log("Erro ao iniciar musica: "+msg);
+    });
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Ligada</a>";
@@ -260,20 +259,14 @@ function iniciarMusica(){
 function pararMusica(isControle){
     
     if(!isControle){
-        sound.stop();
-        sound.release();
+        window.plugins.NativeAudio.stop("musica");
+        window.plugins.NativeAudio.unload("musica");
     }
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
 //    btMusica.removeEventListener('click',pararMusica);
 //    btMusica.addEventListener('click', tocarMusica);
-}
-
-function pausarMusica(){
-    if(tocarMusica === "true"){
-        sound.pause();
-    }
 }
 
 function exit(){
@@ -531,7 +524,7 @@ var snake = {
         
         lengthCorpo = this.corpo.length;
         
-        setTimeout(media.play(), 0);
+        setTimeout(window.plugins.NativeAudio.play("comer"), 0);
 
         var pts = document.getElementById("pontos");
         var pontos = lengthCorpo - 10;

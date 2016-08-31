@@ -8,15 +8,15 @@
     },
     "installed_plugins": {
         "cordova-plugin-device": {
-            "PACKAGE_NAME": "com.phonegap.helloworldjqm"
+            "PACKAGE_NAME": "com.phonegap.snake"
         },
         "cordova-plugin-file": {
-            "PACKAGE_NAME": "com.phonegap.helloworldjqm"
+            "PACKAGE_NAME": "com.phonegap.snake"
         }
     },
     "dependent_plugins": {
         "cordova-plugin-compat": {
-            "PACKAGE_NAME": "com.phonegap.helloworldjqm"
+            "PACKAGE_NAME": "com.phonegap.snake"
         }
     }
 }

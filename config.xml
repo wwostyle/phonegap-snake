@@ -16,6 +16,7 @@
 
     <platform name="ios">
         <preference name="iosPersistentFileLocation" value="Library" />
+        <preference name="StatusBarOverlaysWebView" value="true" />
     </platform>
     <platform name="android">
         <preference name="AndroidPersistentFileLocation" value="Internal" />

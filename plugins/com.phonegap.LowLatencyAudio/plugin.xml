@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+           id="com.phonegap.LowLatencyAudio"
+      version="0.1.0">
+    <name>LowLatencyAudio</name>
+    <description>Low latency audio plugin</description>
+    <license>MIT</license>
+    <keywords>phonegap,audio</keywords>
+ 
+ 
+    <js-module src="www/LowLatencyAudio.js" name="LowLatencyAudio">
+    	<clobbers target="window.LowLatencyAudio" />
+    </js-module>
+ 
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="LowLatencyAudio">
+                <param name="android-package" value="com.phonegap.PGLowLatencyAudio"/>
+            </feature>
+        </config-file>
+ 
+        <source-file src="src/android/PGLowLatencyAudio.java" target-dir="src/com/phonegap" />  
+        <source-file src="src/android/PGLowLatencyAudioAsset.java" target-dir="src/com/phonegap" />  
+        <source-file src="src/android/PGPolyphonicVoice.java" target-dir="src/com/phonegap" />   
+     </platform>    
+     
+     
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="LowLatencyAudio">
+                <param name="ios-package" value="LowLatencyAudio"/>
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/LowLatencyAudio.h" />
+        <source-file src="src/ios/LowLatencyAudio.m" />
+        <header-file src="src/ios/LowLatencyAudioAsset.h" />
+        <source-file src="src/ios/LowLatencyAudioAsset.m" />
+    </platform>  
+</plugin>

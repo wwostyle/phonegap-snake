@@ -39,8 +39,8 @@ var app = {
         this.initJGesture();
         this.initKeyboardEvent();
         this.initGame();
-        this.onPause();
-        this.onResume();
+        
+        
         this.menu();
         this.efeitos();
         
@@ -53,13 +53,22 @@ var app = {
 
     onDeviceReady: function() {
 //        navigator.notification.alert("Prepare-se para sofrer!", teste, "Inicio", "Clique-me seu baitola");
-//        console.log("Pagina Inicial: "+window.location.href);
-//        StatusBar.hide();
+
+        StatusBar.hide();
+
+        //pré carregando arquivos de audio
+        LowLatencyAudio.preloadAudio("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3", 1);
+        criarEfeito("comer","sons/PLSTBANG.mp3");
+
+        //iniciando funções que dependem do ondeviceready
+        app.onPause();
+        app.onResume();
+
+
         PLATAFORMA = device.platform;
         readFile(FILE.recorde, atualizaRecorde);
 
 
-        controlarEfeitos("comer","sons/PLSTBANG.mp3");
         checkIfFileExists(FILE.efeitos, function(){
             readFile(FILE.efeitos, function(f){
                 tocarEfeitos = f;
@@ -94,12 +103,12 @@ var app = {
         });
 
         navigator.app.overrideButton("menubutton",true);
-        navigator.app.overrideButton("volumedownbutton",true);
-        navigator.app.overrideButton("volumeupbutton",true);
+//        navigator.app.overrideButton("volumedownbutton",true);
+//        navigator.app.overrideButton("volumeupbutton",true);
 
         document.addEventListener("menubutton", app.onMenuPressed, false);
-        document.addEventListener('volumedownbutton', app.onVolumeDownKeyDown, false);
-        document.addEventListener('volumeupbutton', app.onVolumeUpKeyDown, false);
+//        document.addEventListener('volumedownbutton', app.onVolumeDownKeyDown, false);
+//        document.addEventListener('volumeupbutton', app.onVolumeUpKeyDown, false);
         document.addEventListener('pause', function(){
             pausar();
         }, false);
@@ -181,11 +190,12 @@ var app = {
         var btPause = document.getElementById("pausar");
 //      btPause.removeEventListener('click',pausar,false);
         btPause.addEventListener('click',pausar);
-               
+//        LowLatencyAudio.pause("musica");
     },
 
     onResume: function(){
         var btResume = document.getElementById("resume");
+        StatusBar.hide();
 //      btResume.removeEventListener('click',resume,false);
         btResume.addEventListener('click',resume);
                 
@@ -265,22 +275,22 @@ function atualizarVarTocarMusica(f, callback){
 
 function controlarMusica(){
 
-    window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",volume,1,0,function(){
+//    window.plugins.NativeAudio.preloadComplex("musica","sons/01 Chipper Doodle V2 - Kevin MacLeod.mp3",volume,1,0,function(){
         console.log("funfou");
         if(tocarMusica === "true"){
             iniciarMusica();
         }else{
             pararMusica(true);
         }
-    },function(e){
-        console.log("nao funfou: "+e);
-    });
+//    },function(e){
+//        console.log("nao funfou: "+e);
+//    });
 
 }
 
 function iniciarMusica(){
 
-    window.plugins.NativeAudio.loop("musica",function(){
+    LowLatencyAudio.loop("musica",function(){
 
     },function(msg){
         console.log("Erro ao iniciar musica: "+msg);
@@ -294,9 +304,9 @@ function iniciarMusica(){
 function pararMusica(isControle){
 
     if(!isControle){
-        window.plugins.NativeAudio.stop("musica");
+        LowLatencyAudio.stop("musica");
         if(SAIR === true){
-            window.plugins.NativeAudio.unload("musica");
+            LowLatencyAudio.unload("musica");
         }
     }
 
@@ -304,8 +314,8 @@ function pararMusica(isControle){
     btMusica.innerHTML = "<a href=''>Música: Desligada</a>";
 }
 
-function controlarEfeitos(nome,caminho){
-    window.plugins.NativeAudio.preloadSimple(nome,caminho,function(msg){
+function criarEfeito(nome,caminho){
+    LowLatencyAudio.preloadFX(nome,caminho,function(msg){
         console.log("Efeito iniciado: "+msg);
     },function(msg){
         console.log("Erro ao iniciar o efeito "+ nome +". Motivo: "+msg);
@@ -314,7 +324,7 @@ function controlarEfeitos(nome,caminho){
 
 function playEfeito(nome){
     if(tocarEfeitos === "true"){
-        setTimeout(window.plugins.NativeAudio.play(nome), 0);
+        setTimeout(LowLatencyAudio.play(nome), 0);
     }
 }
 

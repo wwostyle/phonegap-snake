@@ -43,6 +43,10 @@ var app = {
         
         this.menu();
         this.efeitos();
+        this.musica();
+        this.efeitos();
+
+
         
     },
     
@@ -223,20 +227,27 @@ var app = {
     },
 
     musica: function(){
+        if(PLATAFORMA != null){
+            if(tocarMusica === "true"){
+                tocarMusica = "false";
+            }else{
+                tocarMusica = "true";
+            }
 
-        if(tocarMusica === "true"){
-            tocarMusica = "false";
+            writeFile(FILE.somDeFundo, tocarMusica, null, function(){
+                if(tocarMusica === "true"){
+                    iniciarMusica();
+                }else{
+                    pararMusica();
+                }
+            });
         }else{
-            tocarMusica = "true";
-        }
-
-        writeFile(FILE.somDeFundo, tocarMusica, null, function(){
             if(tocarMusica === "true"){
                 iniciarMusica();
             }else{
                 pararMusica();
             }
-        });
+        }
     },
 
     efeitos: function(){
@@ -290,14 +301,22 @@ function controlarMusica(){
 
 function iniciarMusica(){
 
-    LowLatencyAudio.loop("musica",function(){
+    if(PLATAFORMA != null){
+        LowLatencyAudio.loop("musica",function(){
 
-    },function(msg){
-        console.log("Erro ao iniciar musica: "+msg);
-    });
+        },function(msg){
+            console.log("Erro ao iniciar musica: "+msg);
+        });
+    }else{
+        var m = document.getElementById("myMusic");
+        m.autoplay = true;
+        m.load();
+    }
+
 
     var btMusica = document.getElementById("musica");
     btMusica.innerHTML = "<a href=''>Música: Ligada</a>";
+
 
 }
 
@@ -550,13 +569,23 @@ var comida = {
 
     atualiza : function(){
         do{
-            var temp = Math.floor(Math.random() * LARGURA);
-            this.posX = temp;
-        }while(temp % TAMANHO != 0);
-        do{
-            var temp = Math.floor(Math.random() * ALTURA);
-            this.posY = temp;
-        }while(temp % TAMANHO != 0);
+            var tempX,tempY, pronto = true;
+            do{
+                tempX = Math.floor(Math.random() * LARGURA);
+                this.posX = tempX;
+            }while(tempX % TAMANHO != 0);
+            do{
+                tempY = Math.floor(Math.random() * ALTURA);
+                this.posY = tempY;
+            }while(tempY % TAMANHO != 0);
+
+            for(i = 0; i < snake.corpo.length; i++){//verifica se a comida nao vai ser setada onde a cobra esta passando.
+                if(snake.corpo[i].posX == this.posX && snake.corpo[i].posY == this.posY){
+                    pronto = false;
+                }
+            }
+
+        }while(!pronto);
 
     }
 
@@ -806,6 +835,7 @@ function atualiza(){
     frames++;
 
     if((comida.posY == -1 && comida.posX == -1) || (comida.alterar)){
+        
         comida.atualiza();
         comida.alterar = false;
     }
